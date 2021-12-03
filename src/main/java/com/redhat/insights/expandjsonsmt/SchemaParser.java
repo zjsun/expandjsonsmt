@@ -1,14 +1,17 @@
 package com.redhat.insights.expandjsonsmt;
 
-import java.util.Map.Entry;
-
-import org.apache.kafka.connect.errors.ConnectException;
-import org.bson.*;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.SchemaBuilder;
-
+import org.apache.kafka.connect.errors.ConnectException;
+import org.bson.BsonArray;
+import org.bson.BsonDocument;
+import org.bson.BsonNull;
+import org.bson.BsonType;
+import org.bson.BsonValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map.Entry;
 
 /**
  * Kafka Connect parsing schema methods.
@@ -19,6 +22,7 @@ class SchemaParser {
 
     /**
      * Get Struct schema according to input document.
+     *
      * @param doc Parsed document or null.
      */
     static Schema bsonDocument2Schema(BsonDocument doc) {
@@ -28,7 +32,7 @@ class SchemaParser {
     private static SchemaBuilder bsonDocument2SchemaBuilder(BsonDocument doc) {
         final SchemaBuilder schemaBuilder = SchemaBuilder.struct().optional();
         if (doc != null) {
-            for(Entry<String, BsonValue> entry : doc.entrySet()) {
+            for (Entry<String, BsonValue> entry : doc.entrySet()) {
                 addFieldSchema(entry, schemaBuilder);
             }
         }
@@ -52,38 +56,39 @@ class SchemaParser {
 
     private static Schema bsonValue2Schema(BsonValue bsonValue) {
         switch (bsonValue.getBsonType()) {
-        case NULL:
-        case STRING:
-        case JAVASCRIPT:
-        case OBJECT_ID:
-        case DECIMAL128:
-            return Schema.OPTIONAL_STRING_SCHEMA;
+            case NULL:
+            case STRING:
+            case JAVASCRIPT:
+            case OBJECT_ID:
+            case DECIMAL128:
+                return Schema.OPTIONAL_STRING_SCHEMA;
 
-        case DOUBLE:
-            return Schema.OPTIONAL_FLOAT64_SCHEMA;
+            case DOUBLE:
+                return Schema.OPTIONAL_FLOAT64_SCHEMA;
 
-        case BINARY:
-            return Schema.OPTIONAL_BYTES_SCHEMA;
+            case BINARY:
+                return Schema.OPTIONAL_BYTES_SCHEMA;
 
-        case INT32:
-        case TIMESTAMP:
-            return Schema.OPTIONAL_INT32_SCHEMA;
+            case INT32:
+            case TIMESTAMP:
+                return Schema.OPTIONAL_INT32_SCHEMA;
 
-        case INT64:
-        case DATE_TIME:
-            return Schema.OPTIONAL_INT64_SCHEMA;
+            case INT64:
+            case DATE_TIME:
+                return Schema.OPTIONAL_INT64_SCHEMA;
 
-        case BOOLEAN:
-            return Schema.OPTIONAL_BOOLEAN_SCHEMA;
+            case BOOLEAN:
+                return Schema.OPTIONAL_BOOLEAN_SCHEMA;
 
-        case DOCUMENT:
-            return bsonDocument2Schema(bsonValue.asDocument());
+            case DOCUMENT:
+                return bsonDocument2Schema(bsonValue.asDocument());
 
-        case ARRAY:
-            return SchemaBuilder.array(getArrayMemberSchema(bsonValue.asArray())).optional().build();
+            case ARRAY:
+                // datav fix：由于json数据中数组字段不一定有数据，导致无法获取对应schema，会被默认为string，导致后续schema类型错误
+//            return SchemaBuilder.array(getArrayMemberSchema(bsonValue.asArray())).optional().build();
 
-        default:
-            return null;
+            default:
+                return null;
         }
     }
 
@@ -95,14 +100,14 @@ class SchemaParser {
         BsonValue bsonValue = new BsonNull();
         // Get first not-null element type
         for (BsonValue element : bsonArray.asArray()) {
-           if (element.getBsonType() != BsonType.NULL) {
-               bsonValue = element;
-               break;
-           }
+            if (element.getBsonType() != BsonType.NULL) {
+                bsonValue = element;
+                break;
+            }
         }
 
         // validate all members type
-        for (BsonValue element: bsonArray.asArray()) {
+        for (BsonValue element : bsonArray.asArray()) {
             if (element.getBsonType() != bsonValue.getBsonType() && element.getBsonType() != BsonType.NULL) {
                 throw new ConnectException(String.format("Field is not a homogenous array (%s x %s).",
                         bsonValue.toString(), element.getBsonType().toString()));
@@ -112,7 +117,7 @@ class SchemaParser {
     }
 
     private static Schema getArrayMemberSchema(BsonArray bsonArr) {
-        if (bsonArr.isEmpty()){
+        if (bsonArr.isEmpty()) {
             return Schema.OPTIONAL_STRING_SCHEMA;
         }
 
@@ -146,7 +151,7 @@ class SchemaParser {
                 continue;
             }
 
-            for(Entry<String, BsonValue> entry : element.asDocument().entrySet()) {
+            for (Entry<String, BsonValue> entry : element.asDocument().entrySet()) {
                 if (builder.field(entry.getKey()) == null) {
                     addFieldSchema(entry, builder);
                 }

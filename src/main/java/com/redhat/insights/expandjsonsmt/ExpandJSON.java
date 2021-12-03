@@ -18,14 +18,13 @@ package com.redhat.insights.expandjsonsmt;
 
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.connect.connector.ConnectRecord;
-import org.apache.kafka.connect.transforms.Transformation;
-import org.apache.kafka.connect.transforms.util.SimpleConfig;
 import org.apache.kafka.connect.data.Field;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.SchemaBuilder;
 import org.apache.kafka.connect.data.Struct;
 import org.apache.kafka.connect.errors.DataException;
-
+import org.apache.kafka.connect.transforms.Transformation;
+import org.apache.kafka.connect.transforms.util.SimpleConfig;
 import org.bson.BsonArray;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
@@ -110,14 +109,15 @@ abstract class ExpandJSON<R extends ConnectRecord<R>> implements Transformation<
 
     /**
      * Parse JSON objects from given string fields.
-     * @param value Input record to read original string fields.
+     *
+     * @param value        Input record to read original string fields.
      * @param sourceFields List of fields to parse JSON objects from.
      * @return Collection of parsed JSON objects with field names.
      */
     private static HashMap<String, BsonDocument> parseJsonFields(Struct value, List<String> sourceFields,
                                                                  String levelDelimiter) {
         final HashMap<String, BsonDocument> bsons = new HashMap<>(sourceFields.size());
-        for(String field : sourceFields){
+        for (String field : sourceFields) {
             BsonDocument val;
             String[] pathArr = field.split(levelDelimiter);
             List<String> path = Arrays.asList(pathArr);
@@ -150,8 +150,9 @@ abstract class ExpandJSON<R extends ConnectRecord<R>> implements Transformation<
 
     /**
      * Copy original fields value or take parsed JSONS from collection.
-     * @param value Input value to copy fields from.
-     * @param updatedSchema Schema for new output record.
+     *
+     * @param value            Input value to copy fields from.
+     * @param updatedSchema    Schema for new output record.
      * @param jsonParsedFields Parsed JSON objects.
      * @return Output record with parsed JSON values.
      */
@@ -184,7 +185,8 @@ abstract class ExpandJSON<R extends ConnectRecord<R>> implements Transformation<
 
     /**
      * Update schema using JSON template from config.
-     * @param value Input value to take basic schema from.
+     *
+     * @param value            Input value to take basic schema from.
      * @param jsonParsedFields Values of parsed json string fields.
      * @return New schema for output record.
      */
@@ -211,7 +213,8 @@ abstract class ExpandJSON<R extends ConnectRecord<R>> implements Transformation<
     }
 
     @Override
-    public void close() { }
+    public void close() {
+    }
 
     protected abstract Schema operatingSchema(R record);
 

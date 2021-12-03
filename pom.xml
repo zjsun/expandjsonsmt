@@ -5,7 +5,7 @@
 
 	<groupId>com.redhat.insights.expandjsonsmt</groupId>
 	<artifactId>kafka-connect-smt-expandjsonsmt</artifactId>
-	<version>0.0.7</version>
+	<version>0.0.8-SNAPSHOT</version>
 
 	<repositories>
 		<repository>
@@ -16,12 +16,33 @@
 
 	<properties>
 		<java.version>1.8</java.version>
-		<kafka.version>2.0.0</kafka.version>
+		<kafka.version>2.8.1</kafka.version>
 		<kafka.scala.version>2.11</kafka.scala.version>
 		<scala.version>${kafka.scala.version}.8</scala.version>
 		<confluent.version>5.0.0</confluent.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<!-- datav -->
+		<skipTests>true</skipTests>
+		<maven.javadoc.skip>true</maven.javadoc.skip>
+		<checkstyle.skip>true</checkstyle.skip>
+		<docker.prefix>docker.datav.com/datav</docker.prefix>
+		<project.repository.host>http://121.36.152.60:8081</project.repository.host>
 	</properties>
+
+	<!--  私服Nexus -->
+	<distributionManagement>
+		<repository>
+			<id>datav-releases</id>
+			<name>Nexus Release Repository</name>
+			<url>${project.repository.host}/repository/maven-releases/</url>
+		</repository>
+		<snapshotRepository>
+			<id>datav-snapshots</id>
+			<name>Nexus Snapshot Repository</name>
+			<url>${project.repository.host}/repository/maven-snapshots/</url>
+		</snapshotRepository>
+	</distributionManagement>
 
 	<dependencies>
 
@@ -59,13 +80,13 @@
 			<version>3.3.0</version>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.kafka</groupId>
-			<artifactId>kafka_${kafka.scala.version}</artifactId>
-			<version>${kafka.version}</version>
-			<classifier>test</classifier>
-			<scope>test</scope>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>org.apache.kafka</groupId>-->
+<!--			<artifactId>kafka_${kafka.scala.version}</artifactId>-->
+<!--			<version>${kafka.version}</version>-->
+<!--			<classifier>test</classifier>-->
+<!--			<scope>test</scope>-->
+<!--		</dependency>-->
 		<dependency>
 			<groupId>org.apache.kafka</groupId>
 			<artifactId>kafka-clients</artifactId>
@@ -145,6 +166,23 @@
 						<goals>
 							<goal>single</goal>
 						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.2.0</version>
+				<executions>
+					<execution>
+						<id>datav-jar</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<classifier>datav</classifier>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>

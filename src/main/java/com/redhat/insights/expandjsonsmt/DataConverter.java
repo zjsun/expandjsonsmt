@@ -16,7 +16,8 @@ class DataConverter {
 
     /**
      * Convert JSON to Struct value according to inserted schema.
-     * @param bson Parsed bson object.
+     *
+     * @param bson   Parsed bson object.
      * @param schema Schema used for conversion.
      * @return Result struct value.
      */
@@ -37,53 +38,53 @@ class DataConverter {
 
     private static Object bsonValue2Object(BsonValue value, Schema schema) {
         switch (value.getBsonType()) {
-        case STRING:
-            return value.asString().getValue();
+            case STRING:
+                return value.asString().getValue();
 
-        case OBJECT_ID:
-            return value.asObjectId().getValue().toString();
+            case OBJECT_ID:
+                return value.asObjectId().getValue().toString();
 
-        case DOUBLE:
-            return value.asDouble().getValue();
+            case DOUBLE:
+                return value.asDouble().getValue();
 
-        case BINARY:
-            return value.asBinary().getData();
+            case BINARY:
+                return value.asBinary().getData();
 
-        case INT32:
-            return value.asInt32().getValue();
+            case INT32:
+                return value.asInt32().getValue();
 
-        case INT64:
-            return value.asInt64().getValue();
+            case INT64:
+                return value.asInt64().getValue();
 
-        case BOOLEAN:
-            return value.asBoolean().getValue();
+            case BOOLEAN:
+                return value.asBoolean().getValue();
 
-        case DATE_TIME:
-            return value.asDateTime().getValue();
+            case DATE_TIME:
+                return value.asDateTime().getValue();
 
-        case JAVASCRIPT:
-            return value.asJavaScript().getCode();
+            case JAVASCRIPT:
+                return value.asJavaScript().getCode();
 
-        case TIMESTAMP:
-            return value.asTimestamp().getTime();
+            case TIMESTAMP:
+                return value.asTimestamp().getTime();
 
-        case DECIMAL128:
-            return value.asDecimal128().getValue().toString();
+            case DECIMAL128:
+                return value.asDecimal128().getValue().toString();
 
-        case DOCUMENT:
-            return bsonDocument2Struct(value.asDocument(), schema);
+            case DOCUMENT:
+                return bsonDocument2Struct(value.asDocument(), schema);
 
-        case ARRAY:
-            return bsonArray2ArrayList(value.asArray(), schema);
+            case ARRAY:
+                return bsonArray2ArrayList(value.asArray(), schema);
 
-        default:
-            return null;
+            default:
+                return null;
         }
     }
 
     private static Struct bsonDocument2Struct(BsonDocument doc, Schema schema) {
         final Struct struct = new Struct(schema);
-        for(Field field : schema.fields()) {
+        for (Field field : schema.fields()) {
             if (doc.containsKey(field.name())) {
                 convertFieldValue(field.name(), doc.get(field.name()), struct, field.schema());
             }
@@ -93,7 +94,7 @@ class DataConverter {
 
     private static ArrayList<Object> bsonArray2ArrayList(BsonArray bsonArr, Schema schema) {
         final ArrayList<Object> arr = new ArrayList<>(bsonArr.size());
-        for(BsonValue bsonValue : bsonArr.getValues()) {
+        for (BsonValue bsonValue : bsonArr.getValues()) {
             arr.add(bsonValue2Object(bsonValue, schema.valueSchema()));
         }
         return arr;
