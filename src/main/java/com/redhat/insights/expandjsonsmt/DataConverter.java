@@ -1,5 +1,9 @@
 package com.redhat.insights.expandjsonsmt;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.connect.data.Field;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.Struct;
@@ -8,6 +12,7 @@ import org.bson.BsonDocument;
 import org.bson.BsonValue;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 /**
  * Methods for conversion data to Kafka Connect structures.
@@ -75,7 +80,53 @@ class DataConverter {
                 return bsonDocument2Struct(value.asDocument(), schema);
 
             case ARRAY:
-                return bsonArray2ArrayList(value.asArray(), schema);
+                return bsonArray2JsonArray(value.asArray()).toJSONString();
+
+            default:
+                return null;
+        }
+    }
+
+    private static Object bsonValue2Json(BsonValue value) {
+        switch (value.getBsonType()) {
+            case STRING:
+                return value.asString().getValue();
+
+            case OBJECT_ID:
+                return value.asObjectId().getValue().toString();
+
+            case DOUBLE:
+                return value.asDouble().getValue();
+
+            case BINARY:
+                return value.asBinary().getData();
+
+            case INT32:
+                return value.asInt32().getValue();
+
+            case INT64:
+                return value.asInt64().getValue();
+
+            case BOOLEAN:
+                return value.asBoolean().getValue();
+
+            case DATE_TIME:
+                return value.asDateTime().getValue();
+
+            case JAVASCRIPT:
+                return value.asJavaScript().getCode();
+
+            case TIMESTAMP:
+                return value.asTimestamp().getTime();
+
+            case DECIMAL128:
+                return value.asDecimal128().getValue().toString();
+
+            case DOCUMENT:
+                return JSON.parseObject(value.asDocument().toJson());
+
+            case ARRAY:
+                return bsonArray2JsonArray(value.asArray());
 
             default:
                 return null;
@@ -96,6 +147,14 @@ class DataConverter {
         final ArrayList<Object> arr = new ArrayList<>(bsonArr.size());
         for (BsonValue bsonValue : bsonArr.getValues()) {
             arr.add(bsonValue2Object(bsonValue, schema.valueSchema()));
+        }
+        return arr;
+    }
+
+    private static JSONArray bsonArray2JsonArray(BsonArray bsonArr) {
+        final JSONArray arr = new JSONArray(bsonArr.size());
+        for (BsonValue bsonValue : bsonArr.getValues()) {
+            arr.add(bsonValue2Json(bsonValue));
         }
         return arr;
     }

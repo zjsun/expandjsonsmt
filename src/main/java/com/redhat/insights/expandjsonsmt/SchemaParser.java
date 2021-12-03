@@ -84,8 +84,9 @@ class SchemaParser {
                 return bsonDocument2Schema(bsonValue.asDocument());
 
             case ARRAY:
-                // datav fix：由于json数据中数组字段不一定有数据，导致无法获取对应schema，会被默认为string，导致后续schema类型错误
-//            return SchemaBuilder.array(getArrayMemberSchema(bsonValue.asArray())).optional().build();
+                return Schema.OPTIONAL_STRING_SCHEMA;
+            // datav fix：由于json数据中数组字段不一定有数据，导致无法获取对应schema，会被默认为string，导致后续schema类型错误
+            // return SchemaBuilder.array(getArrayMemberSchema(bsonValue.asArray())).optional().build();
 
             default:
                 return null;
